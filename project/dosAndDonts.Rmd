@@ -1,0 +1,343 @@
+---
+title: "Comments for your project"
+author: Prof. Draguljić
+date: \today
+fontsize: 12pt
+geometry: margin=0.7in
+output: pdf_document
+header-includes:
+- \usepackage{setspace}\onehalfspacing
+---
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\newpage
+
+
+
+See the RMarkdown file for how to easily create Table of contents, 
+list of figures, and list of tables. 
+
+What follows is a list of common mistakes that I compiled from different 
+courses. Please address the mistakes in your work to make it more
+professional.
+
+Stop by my office if ask a question beofre you turn in substandard work. 
+
+# Setting global R options
+
+To set global options like figure size, printing of R code, etc. use this
+R command. 
+
+```{r, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(fig.width = 10, fig.height = 5, echo = TRUE, eval = TRUE)
+```
+
+# Suspending warning messages
+
+If you load the tidyverse package you get all sorts of warnings. They are 
+not necesarily bad. It's just R telling what it's doing. 
+
+```{r}
+library(tidyverse)
+```
+
+These comments should not be in your final report. To supress them
+use *message = FALSE, warning = FALSE* options in the R chunk where you 
+load the package. 
+
+```{r, message = FALSE, warning = FALSE}
+library(tidyverse)
+```
+
+# General comments
+
+## Read your report
+
+Read your final report before you submit it! And read it in your pdf
+file and not your rmd file. I will be reading your pdf file, so if 
+something looks good in rmd file but not in pdf file, then it 
+does not look good. 
+
+Read. Your. Final. Submission!
+
+More than once. 
+
+## Provide detailed answers
+
+For any question (where applicable) provide written and 
+visual answers (figures, tables, etc.) The written and visual 
+answers should be stand-alone. That is, after reading your written
+response I should be able to imagine what that scatterplot or
+boxplot looks like. 
+
+## Creating figures
+
+Figure \ref{fig:q1a} shows a bad looking plot. The same plot that looks 
+decent is shown in Figure \ref{fig:q1b}. Note how I referenced the 
+figures here using LaTeX. Not how I also added figure labels that also 
+show up in the list of figures. 
+
+```{r,  fig.cap="\\label{fig:q1a} The scatterplot of Sepal.Length and Petla.lenghts"}
+plot(iris$Sepal.Length, iris$Petal.Length, cex.lab = 0.75, cex.axis = 0.75, 
+     main = "Petal vs. Sepal length")
+```
+
+
+
+```{r,  fig.cap="\\label{fig:q1b} The relationship between sepal and petal lenghts", fig.width = 6, fig.height = 5}
+plot(iris$Sepal.Length, iris$Petal.Length, 
+     xlim = c(4, 8), las = 1, ylim = c(1, 7),
+     xlab = "Sepal length (cm)", ylab = "Petal length (cm)",
+     cex.lab = 1.1, cex.axis = 1.1)
+```
+
+Here are some comments on the bad plot. 
+
+\begin{itemize}
+   \item Axis and tickmark labels are too small. 
+   \item Both axis ranges are too small, i.e. they do not cover all the 
+      data. 
+   \item Since both variables are on the same scale, the plot should be more
+      square than rectangular. 
+   \item Don't put a main title in your plot. That's what the figure label is for. 
+   \item Figure label 
+   \begin{itemize}
+      \item There are typos in there.
+      \item Never user R's variable names in your labels or, for that matter,
+         in the text. Never! These are random names and might have no meaning
+         relevant at all. 
+      \item I see it's a scatterplot. No need to tell me that. 
+      \item Don't capitalize ``random'' words. Start with a capital letter
+         and capitalize what you would capitalize otherwise. 
+   \end{itemize}
+   \item Tickmark labels aren't rotated properly on the y-axis. 
+   \item Units are missing. 
+\end{itemize}
+
+Keep your figures, generally, in the same format, i.e. the same label size, 
+same tickmark size, etc., in the whole document.  
+
+Don't use colors that cannot be clearly seen in your plots. In particular, I 
+see a lot of yellow plot symbols. They just tended to blur together 
+on the page. So, yellow makes a particularly bad choice. 
+
+You don't need the legend if there is only one symbol or 
+line on the plot. Two or more, add a legend.
+
+## Creating tables
+
+- Add table labels. Don't make your labels too technical.  
+
+```{r}
+summaryStatIris <- iris %>% 
+  group_by(Species) %>%
+  summarise(n = n(), 
+            avg = round(mean(Sepal.Length), 2), 
+            sd = round(sd(Sepal.Length), 2), 
+            lcb = round(avg - qt(0.975, n - 1)*sd/sqrt(n), 2), 
+            ucb = round(avg + qt(0.975, n - 1)*sd/sqrt(n), 2))
+```
+
+
+This is a bad table: 
+
+```{r}
+summaryStatIris
+```
+
+Table \ref{tbl:sumStats} shows the summary statistics of the sepal length for 
+each species. This table looks good. It is properly formatted and it has 
+a table label that shows up in list of tables at the beginning. 
+
+```{r}
+library(knitr)
+kable(summaryStatIris, 
+      col.names = c("Species", "n", "Average", "Std. deviation", 
+                    "95% CI lower bound", "95% CI upper bound"), 
+      caption = "\\label{tbl:sumStats} The summary statistics for the sepal length by species")
+```
+
+## Hard-coding the values 
+
+Do not hard-code values in your code. Eventually, this will be a bad news!
+
+For example
+
+```{r}
+mean(iris$Petal.Length)
+mean(iris$Sepal.Length)
+if(3.758 < 5.843333){
+  junkVar <- iris$Petal.Length - (5.843333 - 3.758)
+}
+mean(junkVar)
+```
+
+should be coded as 
+
+```{r}
+avgP <- mean(iris$Petal.Length)
+avgS <- mean(iris$Sepal.Length)
+if(avgP < avgS){
+  junkVar <- iris$Petal.Length - (avgS - avgP)
+}
+mean(junkVar)
+```
+
+With the proper coding, if your data set changes, your code will still work. If you 
+hard-code in the values, then you will have to go around and fix all those. 
+You will miss some for sure. 
+
+## Wrapping your R code
+
+Keep your code on the page and in the shaded box. 
+
+```{r,  eval = FALSE}
+plot(iris$Sepal.Length, iris$Petal.Length, xlim = c(4, 8), las = 1, ylim = c(1, 7), xlab = "Sepal length (cm)", ylab = "Petal length (cm)", cex.lab = 1.1, cex.axis = 1.1)
+```
+
+Nobody can read the code above. See Figure \ref{fig:q1b} code for proper and
+readable formatting. 
+
+## Writing up the results 
+
+When you are describing a distribution, describe this distribution in terms of 
+center or typical value (mean, median, or some other appropriate statistic), 
+spread (usually standard deviation, IQR, or range), outliers, skewness, modality, 
+etc. 
+
+When you're asked to compare two distributions, most often it makes sense to 
+compare the average values. Saying something like 
+
+"on average, our data indicates that
+early class is getting higher scores than the afternoon class" 
+
+is much better than saying
+
+"there is some overlap between boxplots for group A and group B."
+
+
+
+## Write in context of the problem 
+
+All your written explanations, interpretation, etc. should be in the 
+context of a problem! They should also try to be as non-technical as 
+possible. 
+
+While saying something like 
+
+"the distribution of the scores is skewed right"
+
+is correct, saying something like
+
+"majority of the countries have low GBGR scores indicating low
+acceptance of LGBTQ community"
+
+will be much more appreciated by your non-statistical colleague. 
+
+
+## Using R in the text 
+
+You can use R within your text. For example, suppose you want to say 
+what the average sepal length in your data set is. You could do this 
+by calculating the height first via
+
+```{r}
+mean(iris$Sepal.Length)
+```
+
+and then, after copying and pasting the average height, saying 
+something along the line of 
+
+"The average child's height is 5.84 cm."
+
+Another option is to directly calculate this height in your text as in 
+
+"The average child's height is `r round(mean(iris$Sepal.Length), 2)` inches."
+
+The above line reads 
+
+The average child's height is **r mean(iris$Sepal.Length), 2)** inches.
+
+where the bolded *r mean(iris$Sepal.Length), 2)* is placed into ` ` so that Markdown
+knows that it is an R command and that it should execute it. I bolded it here
+for the illustration purposes. 
+
+<!--
+## 11. 
+
+Consider the two plots below. 
+
+```{r, eval = FALSE, echo = FALSE}
+set.seed(200)
+x <- runif(100, 0, 1)*100
+
+y1 <- x + rnorm(100, 0, 20)
+y2 <- x + rnorm(100, 0, 4)
+
+par(mfrow = c(1, 2))
+plot(x, y1)
+abline(a = 0, b = 1)
+plot(x, y2)
+abline(a = 0, b = 1)
+```
+
+Both plots show a pretty strong relationship between x and y. As a matter of fact, 
+both sets of data points were generated from $y = x$ relationship. The difference 
+is that, in the plot on the left, I added more noise about the line than in 
+the plot on the right. While both plots show pretty strong relationship between the
+variables, the variability is much larger in the plot on the left. 
+-->
+
+## Additional comments
+
+- Don't use the R variable names in your written part. If you make a 
+histogram of via *hist(myData$hgb)*, you should not use $hgb$ in the 
+text. If, for example, *hgb* represents the hemoglobin blood levels, 
+then you should use hemoglobin blood levels in your document. 
+
+- To interpret coefficients say something like 
+
+When the stove is turned off, our model predicts that 450.19 seconds are 
+needed for 1200 g of snow to melt on average.
+
+- Write down you estimated model:
+
+The straight line relationship between the stove setting and the time
+needed to melt 120 g of snow is given by 
+
+\[temperature = 450.19 - 234\times stove~setting.\]
+
+<!--
+- var(response) cannot be reduced by a model. 
+    + "Model doesn't account for variability in response. It hits only a few values."
+    isn't a clear statement. 
+-->
+
+- Run the spell check! Each misspelled word is penalized. The spell check 
+button is next to the knit button and it looks like ABC with a check below them. 
+
+- Round your values to something reasonable.
+- Show your calculations, i.e. type them out. For example
+
+\begin{eqnarray*}
+\Delta y &=& y(x+1) - y(x) \\
+   &=& \beta_0 + \beta_1(x+1) + \beta_2(x+1)^2 - \beta_0 + \beta_1x + \beta_2x^2 \\
+   & & \vdots \\
+   &=& \beta_1 + \beta_2 + 2\beta_2x  
+\end{eqnarray*}
+
+- Write out your derivative in LaTeX. For example
+
+\[\frac{\mathrm{d}}{\mathrm{d} x} y = -65e^{-x}\]
+
+- To add space between two words in LaTeX's math environment use ~ as in 
+
+\[stove setting\] vs \[stove~setting\]
+
+
+ 
+- Don't start your answer with "answer:" but do start them on a new line. 
+- Use LaTeX where you can. 
