@@ -1,5 +1,0 @@
----
-title: "Proposal"
-output: html_document
----
-
