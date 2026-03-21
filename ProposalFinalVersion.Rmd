@@ -1,0 +1,290 @@
+---
+title: 'Proposal of Final Project'
+author: Allison F. Herr & Kelvin Lartey
+date: \today
+output: 
+  pdf_document:
+    number_sections: yes
+    toc: yes
+    toc_depth: 3
+geometry: margin=0.85in
+fontsize: 12pt
+header-includes:
+- \usepackage{setspace}\onehalfspacing
+---
+
+\listoffigures
+\listoftables
+
+\newpage
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,      # hides code
+  message = FALSE,   # hides messages like geom_smooth
+  warning = FALSE,   # hides warnings
+  fig.width = 6,
+  fig.height = 4,
+  fig.align = "center"
+)
+
+library(knitr)
+library(tidyverse)
+```
+
+
+# Source Of Our Data Set
+
+We sourced our data-set from kaggle.com. The exact page can be found at this web address:
+
+https://www.kaggle.com/datasets/talhachoudary/global-agriculture-climate-impact-dataset
+
+
+
+```{r include = FALSE}
+
+ClimateOnAg <- read.csv("C:/Users/blevi/OneDrive/Desktop/mat317/data/climate_change_impact_on_agriculture_2024.csv")
+
+```
+
+
+The following R code outputs the number of observations in our data set as well as the first three rows. 
+
+
+```{r}
+
+nrow(ClimateOnAg)
+
+head(ClimateOnAg, 3)
+
+```
+
+
+# Description of Variables
+
+
+Effect of climate in agriculture is a 10000 observation, 15 variable data set. Variables include:
+
+- Year (Continuous): the year the observation was recorded
+
+- Country (Categorical): Indicates the country where the data was collected
+
+- Region (Categorical): Indicates the specific region within the country
+
+- Crop_Type (Categorical): The type of crop being analyzed
+
+- Average_Temperature_C (Continuous): the average temperature recorded during the growing season in Celsius
+
+- Total_Precipitation_mm (Continuous): total precipitation in millimeters during the growing season
+
+- CO2_Emissions_MT (Continuous): CO2 emissions associated with agricultural activities in the region in metric tons
+
+- Crop_Yield_MT_per_HA (Continuous): Crop yield measured in metrics tons per hectare
+
+- Extreme_Weather_Events (Continuous): Number of extreme weather events that occurred during the growing season
+
+- Irrigation_Access_% (Continuous): Percentage of crop area that has access to irrigation
+
+- Pesticide_Use_KG_per_HA (Continuous): Kilograms of pesticides used per hectare of crops
+
+- Fertilizer_Use_KG_per_HA (Continuous): Kilograms of fertilizer used per hectare of crops
+
+- Soil_Health_Index (Continuous): Soil health (characterized by an appropriate balance of various chemical/mineral levels) on a scale of 0-100
+
+- Adaptation_Strategies (Categorical): Listed climate adaptation strategies. Includes values such as "Water Management" and "Crop Rotation"
+
+- ***Economic_Impact_Million_USD (Continuous): There is no provided description of these variable, I am unaware of if this is cost of climate mitigating effects or if it is profit per some unit, as such we will not be using it in our analysis and instead investigating agricultural health instead. 
+
+- Climate Zones (Categorical): Since country and region don't tell us very much about climate - especially for larger nations like the US - we instead mutated them into a categorical variable that reflects the climate of the zone. Upon research we identified that there are 5 major climate types. Tropical, Dry, Continental, Temperate, and Polar. We did some research to construct a table of all the unique Country and Regions to identify which climate group they were. 
+
+
+The following R code creates a data frame "Climate_keys" which contains all unique combinations of "Country" and "Region" found within out data set.
+
+```{r}
+
+climate_keys <- ClimateOnAg %>%
+  distinct(Country, Region) %>%
+  arrange(Country, Region)
+
+View(climate_keys)
+
+```
+
+The following R code uses the unique "Country", "Region" possibilities and matches them up with their respective climate type before then joining "climate" to the original data-set as a new categorical variable. 
+
+```{r}
+
+climate_keys <- tribble(
+  ~Country, ~Region, ~Climate,
+  "Argentina","Northeast","Temperate",
+  "Argentina","Northwest","Dry",
+  "Argentina","Pampas","Temperate",
+  "Argentina","Patagonia","Polar",
+  "Australia","New South Wales","Temperate",
+  "Australia","Queensland","Tropical",
+  "Australia","Victoria","Temperate",
+  "Australia","Western Australia","Dry",
+  "Brazil","North","Tropical",
+  "Brazil","Northeast","Tropical",
+  "Brazil","South","Temperate",
+  "Brazil","Southeast","Temperate",
+  "Canada","British Columbia","Temperate",
+  "Canada","Ontario","Continental",
+  "Canada","Prairies","Continental",
+  "Canada","Quebec","Continental",
+  "China","Central","Temperate",
+  "China","East","Temperate",
+  "China","North","Continental",
+  "China","South","Tropical",
+  "France","Grand Est","Temperate",
+  "France","Ile-de-France","Temperate",
+  "France","Nouvelle-Aquitaine","Temperate",
+  "France","Provence-Alpes-Cote d’Azur","Temperate",
+  "India","Maharashtra","Tropical",
+  "India","Punjab","Dry",
+  "India","Tamil Nadu","Tropical",
+  "India","West Bengal","Tropical",
+  "Nigeria","North Central","Tropical",
+  "Nigeria","North West","Dry",
+  "Nigeria","South East","Tropical",
+  "Nigeria","South West","Tropical",
+  "Russia","Central","Continental",
+  "Russia","Northwestern","Continental",
+  "Russia","Siberian","Polar",
+  "Russia","Volga","Continental",
+  "USA","Midwest","Continental",
+  "USA","Northeast","Continental",
+  "USA","South","Temperate",
+  "USA","West","Dry"
+)
+
+ClimateOnAg <- ClimateOnAg %>%
+  left_join(climate_keys, by = c("Country", "Region"))
+
+```
+
+
+# Research Questions
+
+**Classification:**
+
+
+Does a statistically significant relationship exist between one or more of the following variables: Average_Temperature_C, Total_Precipitation_mm, Irrigation_Access_., Pesticide_Use_KG_per_HA, Fertilizer_Use_KG_per_HA, Climate, Country, Region, & Adaptation_Strategies, and the response variable Crop_type? This question will explore whether some crop types more frequently grown under certain circumstances.
+
+
+
+**Regression: **
+
+Does a statistically significant relationship exist between Crop_Yield_MT_per_HA on the basis of the variables Year, Climate, Country, Region, Average_Temperature_C, Total_Precipitation_mm, Irrigation_Access_., Pesticide_Use_KG_per_HA, Fertilizer_Use_KG_per_HA, Extreme_Weather_Events, Soil_Health_Index, and Adaptation_Strategy. This question will explore how weather, climate, and agricultural practices effect overall yield.
+
+
+# Distribution of Our Response Variables
+
+
+```{r CropYeildDis, fig.cap = "Histogram of the Distribution of Crop Yeild", echo=FALSE}
+
+
+ggplot(ClimateOnAg, aes(x=Crop_Yield_MT_per_HA)) + 
+  geom_histogram(color="darkgreen", fill="lightgreen") +
+  labs( x = "Crop Yeild (metrics tons per hectare)", y = "Count") 
+
+
+```
+
+
+
+
+```{r}
+
+ClimateOnAg %>%
+  count(Crop_Type) %>%
+  kable(caption = "Number of observations by crop type")
+
+```
+
+
+
+# Plots of Some Explanatory vs. Response Variables
+
+
+```{r Temp/Yield, fig.cap = "Scatterplot of Crop Yeild vs. Temperature" , echo=FALSE}
+
+ggplot(ClimateOnAg, 
+       aes(x = Average_Temperature_C, 
+           y = Crop_Yield_MT_per_HA)) +
+  
+  geom_point(color = "darkgreen", 
+             fill = "lightgreen",
+             size = 1,
+             alpha = 0.7) +
+  
+  geom_smooth( 
+              color = "black", 
+              se = FALSE) +
+  
+  labs(
+    x = "Average Temperature (Celcius)",
+    y = "Crop Yield (Metric Tons per Hectare)"
+  ) +
+  
+  theme_minimal() 
+  
+```
+
+
+
+
+```{r Yield/Country, fig.cap = "Boxplots of the Distribution of Crop Yield by Country", echo=FALSE}
+
+ggplot(ClimateOnAg, aes(x = Country, y = Crop_Yield_MT_per_HA , fill = Country)) +
+  geom_boxplot() +
+  labs(
+    x = "Country",
+    y = "Crop Yield (Metric tons per Hectare)"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+```
+
+
+
+```{r Crop/Fert, fig.cap = "Boxplots of the Distribution of Fertilizer Use by Crop Type" , echo=FALSE}
+
+ggplot(ClimateOnAg, aes(x = Crop_Type, y = Fertilizer_Use_KG_per_HA , fill = Crop_Type)) +
+  geom_boxplot() +
+  labs(
+    x = "Crop Type",
+    y = "Fertilizer Use (Kilograms per Hectare)"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+```
+
+
+
+
+```{r Crop/Temp, fig.cap = "Boxplots of the Distribution of Average Temperature by Crop Type" , echo=FALSE}
+
+ggplot(ClimateOnAg, aes(x = Crop_Type, y = Average_Temperature_C, fill = Crop_Type)) +
+  geom_boxplot() +
+  labs(
+    x = "Crop Type",
+    y = "Average Temperature (Celcius)"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+```
+
+
+Many of the variables seem to have very little or no relationship, however, perhaps in conjunction more insight can be gathered. This is what I aim to explore in the remainder of this project. For now, however, here are some single variable vs. response variable figures.  
+
+
