@@ -1,6 +1,6 @@
 ---
 title: 'Statistical Analysis of Climate Impact on Global Agriculture Data'
-author: Kelvin Lartey and Allison Herr
+author: Allison Herr and Kelvin Lartey 
 date: \today
 output: 
   pdf_document:
@@ -11,6 +11,9 @@ geometry: margin=0.85in
 fontsize: 12pt
 header-includes:
 - \usepackage{setspace}\onehalfspacing
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 \listoffigures
@@ -23,29 +26,199 @@ header-includes:
 knitr::opts_chunk$set(fig.width = 10, fig.height = 5, echo = TRUE, eval = TRUE)
 library(knitr)
 library(tidyverse)
+library(readr)
+climate_change_impact_on_agriculture_2024 <- read_csv("climate_change_impact_on_agriculture_2024.csv")
+head(climate_change_impact_on_agriculture_2024)
 ```
+
 
 # Introduction
 
-This project was done to fulfill the requirements of MAT317: Introduction to Statistical Learning. Ben Franklin and John Marshall performed x% and 100 - x% of the work, respectively.
-
-Describe here what are you trying to analyze and why would anyone care about your work. Two paragraphs are enough.
+This project was done to fulfill the requirements of MAT317:
+Introduction to Statistical Learning. Allison Herr and Kelvin Lartey.              
+performed x% and 100 - x% of the work, respectively.
 
 Describe here what are you trying to analyze and why would anyone care
-about your work. Two paragraphs are enough. 
+about your work. Two paragraphs are enough.
 
-## Reserach questions
-
-State here your specific regression and classification 
-research questions. Use specific variable names that you will 
-use in your analyses. 
-
-## Data set desription
-
-Our data set, Global Agriculture Climate Change impact was found on Kaggle (https://www.kaggle.com/datasets/talhachoudary/global-agriculture-climate-impact-dataset)
-What do you know about the data? How was it collected? When was it 
-collected? Who collected it? 
-This data set contains 15 variables, the some of the most relevant varaibles are Extreme weather, a caterical variable that depicts different weather events 
-What are the relevant variables?
+Our data set is looking at the 
 
 
+
+
+
+
+
+
+# Climate Zones
+Creating climate zones based on temperature and precipitation
+```{r}
+
+
+Climate_newdata <- climate_change_impact_on_agriculture_2024 %>%
+  mutate(
+    climate_zone = case_when(
+      Average_Temperature_C <= 0 ~ "Polar_zone",
+      Total_Precipitation_mm <= 300 ~ "Dry_zone",
+      Average_Temperature_C >= 20 ~ "Tropical_zone",
+      Average_Temperature_C >= 10 & Average_Temperature_C < 20 ~ "Temperate_zone",
+      Average_Temperature_C > 0 & Average_Temperature_C < 10 ~ "Continental_zone"
+    )
+  )
+
+head(Climate_newdata)
+
+```
+
+
+# Average crop yield by climate zone
+
+```{r}
+ggplot(Climate_newdata, aes(x = climate_zone, y = Crop_Yield_MT_per_HA)) +
+  geom_boxplot() +
+  labs(
+    title = "Crop Yield by Climate Zone",
+    x = "Climate Zone",
+    y = "Crop Yield (MT per HA)"
+  ) +
+  theme_minimal()
+```
+# Crop yield trend over time; over time is crops improving or not
+Hello, check for commit
+```{r}
+yield_by_year <- Climate_newdata %>%
+  group_by(Year) %>%
+  summarise(
+    mean_yield = mean(Crop_Yield_MT_per_HA, na.rm = TRUE),
+    n = n()
+  )
+
+yield_by_year
+
+ggplot(yield_by_year, aes(x = Year, y = mean_yield)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = "Crop Yield Over Time",
+    x = "Year",
+    y = "Crop Yield (MT per HA)"
+  ) +
+  theme_minimal()
+```
+
+
+#Crop yield by the crop type
+
+
+```{r}
+ggplot(Climate_newdata, aes(x = Crop_Type, y = Crop_Yield_MT_per_HA)) +
+  geom_boxplot() +
+  labs(
+    title = "Crop Yield by Crop Type",
+    x = "Crop Type",
+    y = "Crop Yield (MT per HA)"
+  ) +
+  theme_minimal()
+```
+
+
+#Extreme weather events and crop yield
+Extreme weather effect, barely changes the mean yield. That is intresting
+```{r}
+Climate_newdata %>%
+  group_by(Extreme_Weather_Events) %>%
+  summarise(
+    mean_yield = mean(Crop_Yield_MT_per_HA, na.rm = TRUE),
+    n = n()
+  )
+```
+
+
+#Irrigation access and crop yield
+There is no correlation between irrigation and crop yield.
+```{r}
+
+Climate_newdata<- Climate_newdata%>%
+  rename(Irrigation_Access_per = 'Irrigation_Access_%')
+
+
+#change the Irrigation_Access_% to Irrigation_Access_per, but there was something weird happeing so if anything that might be an issue
+ggplot(Climate_newdata, aes(x = Irrigation_Access_per, y = Crop_Yield_MT_per_HA)) +
+  geom_point(alpha = 0.5) +
+  labs(
+    title = "Crop Yield vs Irrigation Access",
+    x = "Irrigation Access (%)",
+    y = "Crop Yield (MT per HA)"
+  ) +
+  theme_minimal()
+
+
+cor(
+  Climate_newdata$`Irrigation_Access_per`,
+  Climate_newdata$Crop_Yield_MT_per_HA,
+)
+```
+
+
+# Comparing crop yield across different climate zone and crop type all together
+
+```{r}
+ggplot(Climate_newdata, aes(x = climate_zone, y = Crop_Yield_MT_per_HA, fill = Crop_Type)) +
+  geom_boxplot() +
+  labs(
+    title = "Crop Yield by Climate Zone and Crop Type",
+    x = "Climate Zone",
+    y = "Crop Yield (MT per HA)"
+  ) +
+  theme_minimal()
+```
+
+
+```{r}
+Climate_newdata %>%
+  group_by(climate_zone, Crop_Type) %>%
+  summarise(
+    mean_yield = mean(Crop_Yield_MT_per_HA, na.rm = TRUE),
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  arrange(climate_zone, desc(mean_yield))
+```
+
+
+
+# Overall Correltion data
+
+```{r}
+numeric_data <- Climate_newdata %>%
+  select(
+    Year,
+    Average_Temperature_C,
+    Total_Precipitation_mm,
+    CO2_Emissions_MT,
+    Crop_Yield_MT_per_HA,
+    Extreme_Weather_Events,
+    `Irrigation_Access_per`
+  )
+
+cor(numeric_data)
+```
+
+
+
+## Research questions
+
+State here your specific regression and classification research
+questions. Use specific variable names that you will use in your
+analyses.
+
+## Data set description
+
+Our data set, Global Agriculture Climate Change impact was found on
+Kaggle
+(<https://www.kaggle.com/datasets/talhachoudary/global-agriculture-climate-impact-dataset>)
+What do you know about the data? How was it collected? When was it
+collected? Who collected it? This data set contains 15 variables, the
+some of the most relevant variables are Extreme weather, a categorical
+variable that depicts different weather events What are the relevant
+variables?
