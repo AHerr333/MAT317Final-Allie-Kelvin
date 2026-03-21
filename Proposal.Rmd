@@ -1,5 +1,51 @@
 ---
-title: "Proposal"
-output: html_document
+title: 'Statistical Analysis of Climate Impact on Global Agriculture Data'
+author: Kelvin Lartey and Allison Herr
+date: \today
+output: 
+  pdf_document:
+    number_sections: yes
+    toc: yes
+    toc_depth: 3
+geometry: margin=0.85in
+fontsize: 12pt
+header-includes:
+- \usepackage{setspace}\onehalfspacing
 ---
+
+\listoffigures
+\listoftables
+
+\newpage
+
+```{r, message = FALSE, warning = FALSE}
+# set your global options here and load your packages
+knitr::opts_chunk$set(fig.width = 10, fig.height = 5, echo = TRUE, eval = TRUE)
+library(knitr)
+library(tidyverse)
+```
+
+# Introduction
+
+This project was done to fulfill the requirements of MAT317: Introduction to Statistical Learning. Ben Franklin and John Marshall performed x% and 100 - x% of the work, respectively.
+
+Describe here what are you trying to analyze and why would anyone care about your work. Two paragraphs are enough.
+
+Describe here what are you trying to analyze and why would anyone care
+about your work. Two paragraphs are enough. 
+
+## Reserach questions
+
+State here your specific regression and classification 
+research questions. Use specific variable names that you will 
+use in your analyses. 
+
+## Data set desription
+
+Our data set, Global Agriculture Climate Change impact was found on Kaggle (https://www.kaggle.com/datasets/talhachoudary/global-agriculture-climate-impact-dataset)
+What do you know about the data? How was it collected? When was it 
+collected? Who collected it? 
+This data set contains 15 variables, the some of the most relevant varaibles are Extreme weather, a caterical variable that depicts different weather events 
+What are the relevant variables?
+
 
